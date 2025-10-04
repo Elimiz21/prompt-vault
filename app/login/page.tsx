@@ -27,9 +27,24 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+          },
         })
         if (error) throw error
-        setMessage({ type: 'success', text: 'Check your email to confirm your account!' })
+
+        // Auto sign in after signup (if email confirmation is disabled in Supabase)
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+
+        if (signInError) {
+          setMessage({ type: 'success', text: 'Account created! Check your email to confirm.' })
+        } else {
+          router.push('/dashboard')
+          router.refresh()
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
