@@ -24,7 +24,7 @@ export default function LoginPage() {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -33,15 +33,14 @@ export default function LoginPage() {
         })
         if (error) throw error
 
-        // Auto sign in after signup (if email confirmation is disabled in Supabase)
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-
-        if (signInError) {
-          setMessage({ type: 'success', text: 'Account created! Check your email to confirm.' })
-        } else {
+        // Check if email confirmation is required
+        if (data?.user && !data.session) {
+          setMessage({
+            type: 'success',
+            text: 'Account created! Please check your email (including spam folder) to confirm your account.'
+          })
+        } else if (data?.session) {
+          // Email confirmation is disabled, user is automatically logged in
           router.push('/dashboard')
           router.refresh()
         }
