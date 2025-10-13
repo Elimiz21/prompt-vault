@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
+  const [isForgotPassword, setIsForgotPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'error' | 'success', text: string } | null>(null)
   const router = useRouter()
@@ -23,6 +24,19 @@ export default function LoginPage() {
     setMessage(null)
 
     try {
+      if (isForgotPassword) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        })
+        if (error) throw error
+        setMessage({
+          type: 'success',
+          text: 'Password reset email sent! Check your inbox (and spam folder).'
+        })
+        setLoading(false)
+        return
+      }
+
       if (isSignUp) {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -87,10 +101,12 @@ export default function LoginPage() {
         <Card className="border-none shadow-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold">
-              {isSignUp ? 'Create an account' : 'Welcome back'}
+              {isForgotPassword ? 'Reset Password' : isSignUp ? 'Create an account' : 'Welcome back'}
             </CardTitle>
             <CardDescription>
-              {isSignUp
+              {isForgotPassword
+                ? 'Enter your email to receive a password reset link'
+                : isSignUp
                 ? 'Enter your email to create your account'
                 : 'Enter your credentials to access your prompts'}
             </CardDescription>
@@ -110,19 +126,21 @@ export default function LoginPage() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <Input
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 h-11"
-                    required
-                  />
+              {!isForgotPassword && (
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 h-11"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {message && (
                 <div
@@ -141,19 +159,36 @@ export default function LoginPage() {
                 className="w-full h-11 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700"
                 disabled={loading}
               >
-                {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
+                {loading ? 'Loading...' : isForgotPassword ? 'Send Reset Email' : isSignUp ? 'Sign Up' : 'Sign In'}
               </Button>
 
-              <div className="text-center text-sm">
+              <div className="text-center text-sm space-y-2">
+                {!isForgotPassword && !isSignUp && (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsForgotPassword(true)
+                        setMessage(null)
+                      }}
+                      className="text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => {
                     setIsSignUp(!isSignUp)
+                    setIsForgotPassword(false)
                     setMessage(null)
                   }}
                   className="text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium"
                 >
-                  {isSignUp
+                  {isForgotPassword
+                    ? 'Back to Sign In'
+                    : isSignUp
                     ? 'Already have an account? Sign in'
                     : "Don't have an account? Sign up"}
                 </button>
