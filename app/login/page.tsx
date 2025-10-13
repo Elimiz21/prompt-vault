@@ -59,15 +59,28 @@ export default function LoginPage() {
           router.refresh()
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
-        if (error) throw error
+
+        console.log('Login attempt:', { data, error })
+
+        if (error) {
+          console.error('Login error:', error)
+          throw error
+        }
+
+        if (!data.session) {
+          throw new Error('Login failed: No session created. Please check your email confirmation.')
+        }
+
+        console.log('Login successful, redirecting to dashboard')
         router.push('/dashboard')
         router.refresh()
       }
     } catch (error) {
+      console.error('Auth error:', error)
       setMessage({ type: 'error', text: error instanceof Error ? error.message : 'An error occurred' })
     } finally {
       setLoading(false)
