@@ -41,21 +41,24 @@ export default function LoginPage() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
-          },
         })
+
+        console.log('Signup result:', { data, error })
+
         if (error) throw error
 
-        // Check if email confirmation is required
-        if (data?.user && !data.session) {
+        // With email confirmation disabled, user should have a session immediately
+        if (data?.session) {
+          console.log('Signup successful with session, redirecting...')
+          setTimeout(() => {
+            window.location.href = '/dashboard'
+          }, 100)
+        } else {
+          // Shouldn't happen with email confirmation disabled
           setMessage({
-            type: 'success',
-            text: 'Account created! Please check your email (including spam folder) to confirm your account.'
+            type: 'error',
+            text: 'Signup succeeded but no session created. Please try logging in.'
           })
-        } else if (data?.session) {
-          // Email confirmation is disabled, user is automatically logged in
-          window.location.href = '/dashboard'
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
