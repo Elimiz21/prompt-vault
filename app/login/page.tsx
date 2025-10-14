@@ -55,8 +55,7 @@ export default function LoginPage() {
           })
         } else if (data?.session) {
           // Email confirmation is disabled, user is automatically logged in
-          router.push('/dashboard')
-          router.refresh()
+          window.location.href = '/dashboard'
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -76,8 +75,9 @@ export default function LoginPage() {
         }
 
         console.log('Login successful, redirecting to dashboard')
-        router.push('/dashboard')
-        router.refresh()
+
+        // Force a hard refresh to ensure session is picked up
+        window.location.href = '/dashboard'
       }
     } catch (error) {
       console.error('Auth error:', error)

@@ -56,7 +56,7 @@ export default function ResetPasswordPage() {
 
       setMessage({ type: 'success', text: 'Password updated successfully! Redirecting...' })
       setTimeout(() => {
-        router.push('/dashboard')
+        window.location.href = '/dashboard'
       }, 2000)
     } catch (error) {
       setMessage({ type: 'error', text: error instanceof Error ? error.message : 'An error occurred' })
