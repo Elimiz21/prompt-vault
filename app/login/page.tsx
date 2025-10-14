@@ -75,9 +75,14 @@ export default function LoginPage() {
         }
 
         console.log('Login successful, redirecting to dashboard')
+        console.log('Session:', data.session)
+        console.log('User:', data.user)
 
         // Force a hard refresh to ensure session is picked up
-        window.location.href = '/dashboard'
+        console.log('Redirecting now...')
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 100)
       }
     } catch (error) {
       console.error('Auth error:', error)
