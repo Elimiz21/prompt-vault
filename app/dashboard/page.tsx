@@ -13,6 +13,7 @@ export default async function DashboardPage() {
   const { data: prompts } = await supabase
     .from('prompts')
     .select('*')
+    .eq('user_id', user.id)
     .order('updated_at', { ascending: false })
 
   return <DashboardClient initialPrompts={prompts || []} user={user} />
