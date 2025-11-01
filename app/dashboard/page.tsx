@@ -10,11 +10,15 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  const { data: prompts } = await supabase
+  const { data: prompts, error } = await supabase
     .from('prompts')
     .select('*')
     .eq('user_id', user.id)
     .order('updated_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching prompts:', error)
+  }
 
   return <DashboardClient initialPrompts={prompts || []} user={user} />
 }

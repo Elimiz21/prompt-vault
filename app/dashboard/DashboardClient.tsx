@@ -91,7 +91,6 @@ export default function DashboardClient({ initialPrompts, user }: DashboardClien
       if (error) {
         console.error('Error creating prompt:', error)
       } else if (data) {
-        console.log('Prompt created successfully:', data)
         setPrompts([data, ...prompts])
       }
     } else if (selectedPrompt) {
@@ -105,7 +104,6 @@ export default function DashboardClient({ initialPrompts, user }: DashboardClien
       if (error) {
         console.error('Error updating prompt:', error)
       } else if (data) {
-        console.log('Prompt updated successfully:', data)
         setPrompts(prompts.map((p) => (p.id === data.id ? data : p)))
       }
     }
