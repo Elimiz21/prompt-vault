@@ -49,12 +49,30 @@ export default function LoginPage() {
 
         // With email confirmation disabled, user should have a session immediately
         if (data?.session) {
-          console.log('Signup successful with session, redirecting...')
-          setTimeout(() => {
-            window.location.href = '/dashboard'
-          }, 100)
+          console.log('Signup successful with session, syncing to server...')
+
+          // Must sync session to server-side cookies for middleware
+          const response = await fetch('/api/auth/set-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token,
+            }),
+          })
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Failed to sync session')
+          }
+
+          console.log('Session synced to server, redirecting...')
+          setMessage({ type: 'success', text: 'Account created! Redirecting...' })
+
+          // Use window.location for full page reload with cookies
+          await new Promise(resolve => setTimeout(resolve, 100))
+          window.location.href = '/dashboard'
         } else {
-          // Shouldn't happen with email confirmation disabled
           setMessage({
             type: 'error',
             text: 'Signup succeeded but no session created. Please try logging in.'
@@ -74,18 +92,32 @@ export default function LoginPage() {
         }
 
         if (!data.session) {
-          throw new Error('Login failed: No session created. Please check your email confirmation.')
+          throw new Error('Login failed: No session created.')
         }
 
-        console.log('Login successful, redirecting to dashboard')
-        console.log('Session:', data.session)
-        console.log('User:', data.user)
+        console.log('Login successful, syncing to server...')
 
-        // Force a hard refresh to ensure session is picked up
-        console.log('Redirecting now...')
-        setTimeout(() => {
-          window.location.href = '/dashboard'
-        }, 100)
+        // Must sync session to server-side cookies for middleware
+        const response = await fetch('/api/auth/set-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+          }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to sync session')
+        }
+
+        console.log('Session synced to server, redirecting...')
+        setMessage({ type: 'success', text: 'Logged in successfully! Redirecting...' })
+
+        // Use window.location for full page reload with cookies
+        await new Promise(resolve => setTimeout(resolve, 100))
+        window.location.href = '/dashboard'
       }
     } catch (error) {
       console.error('Auth error:', error)
